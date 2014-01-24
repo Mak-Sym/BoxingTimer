@@ -143,7 +143,7 @@ void showTime(){
   clearScreen();
   unsigned int localSec = seconds;
   lcd.setCursor(0, 0);
-  lcd.print(menu[scrollableMenu.getCurrent()].name);
+  lcd.print(menu[currentWorkout].name);
   lcd.setCursor(0, 1);
   lcd.print((int)(localSec / 60));
   lcd.print(":");
