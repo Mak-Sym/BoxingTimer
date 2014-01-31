@@ -166,13 +166,13 @@ void clearRow(int row) {
 void sound(int type){
   switch(type) {
     case MUSIC_WARN:
-      tone(2, NOTE_F2, 500);
+      tone(1, NOTE_B4, 1000);
       break;
     case MUSIC_SWITCH:
-      tone(2, NOTE_F4, 1000);
+      tone(1, NOTE_CS6, 3000);
       break;
     case MUSIC_END:
-      tone(2, NOTE_GS3, 3000);
+      tone(1, NOTE_GS3, 5000);
       break;
     
   }
