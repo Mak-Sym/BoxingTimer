@@ -175,7 +175,7 @@ void drawMenu(int menuItem, int row, char isActive){
 }
 
 void showTime(){
-  clearScreen();
+  lcd.clear();
   unsigned int localSec = seconds;
   lcd.setCursor(0, 0);
   lcd.print(workouts[currentWorkout].name);
@@ -191,11 +191,6 @@ void showTime(){
     lcd.print("0");
   }
   lcd.print(localSec % 60);
-}
-
-void clearScreen() {
-  clearRow(0);
-  clearRow(1);
 }
 
 void clearRow(int row) {
