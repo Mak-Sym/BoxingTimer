@@ -42,35 +42,63 @@ class LCDKeypad: public LiquidCrystal {
 
 /*****************************************/
 
-class MenuItem {
+class WorkoutInterval {
   public:
     char *name;
-    uchar countOfIntrvals;
-    uchar currentInterval;
-    uchar *intervals;
-    uchar cycle;  //if == 0 - do not loop (end at intervals)
-  
-    MenuItem(char *n, uchar cnt, uchar c, uchar *intvrls);
-    void incCurrInterval();
-    uchar getCurrIntervalTime();
+    uchar duration;
+    
+    WorkoutInterval(char *n, uchar d);
 };
 
 /*****************************************/
 
-uchar boxingIntervals[] =         {60, 240};
-uchar workout3Intervals[] =       {60, 60, 60, 30, 60, 15};
-uchar workout4Intervals[] =       {60, 60, 60, 45, 60, 30, 60, 15};
-uchar fourPlus2Intervals[] =      {12, 240, 60, 240, 60, 240, 60, 240, 60, 60, 60, 45, 60, 30, 60, 15};                    //4 rounds + 2 workouts
-uchar fourPlus2Plus1Intervals[] = {12, 240, 60, 240, 60, 240, 60, 240, 60, 60, 60, 45, 60, 30, 60, 15, 60, 240};           //4 rounds + 2 workouts + 1 round
-uchar fourPlus2Plus2Intervals[] = {12, 240, 60, 240, 60, 240, 60, 240, 60, 60, 60, 45, 60, 30, 60, 15, 60, 240, 60, 240};  //4 rounds + 2 workouts + 2 rounds
+class Workout {
+  public:
+    char *name;
+    uchar countOfIntrvals;
+    uchar currentInterval;
+    WorkoutInterval *intervals;
+    uchar cycle;  //if == 0 - do not loop (end at intervals)
+  
+    Workout(char *n, uchar cnt, uchar c, WorkoutInterval *intvrls);
+    void incCurrInterval();
+    WorkoutInterval getCurrInterval();
+};
 
-MenuItem menu[MENUS_COUNT] = {
-  MenuItem("Boxing", 2, 1, boxingIntervals),
-  MenuItem("Workout3", 6, 0, workout3Intervals),
-  MenuItem("Workout4", 8, 0, workout4Intervals),
-  MenuItem("4 + 2", 16, 0, fourPlus2Intervals),
-  MenuItem("4 + 2 + 1", 18, 0, fourPlus2Plus1Intervals),
-  MenuItem("4 + 2 + 2", 20, 0, fourPlus2Plus2Intervals)
+/*****************************************/
+
+WorkoutInterval restInterval = WorkoutInterval("break",   60);
+WorkoutInterval round1       = WorkoutInterval("Round1", 240);
+WorkoutInterval round2       = WorkoutInterval("Round2", 240);
+WorkoutInterval round3       = WorkoutInterval("Round3", 240);
+WorkoutInterval round4       = WorkoutInterval("Round4", 240);
+WorkoutInterval round5       = WorkoutInterval("Round5", 240);
+WorkoutInterval round6       = WorkoutInterval("Round6", 240);
+WorkoutInterval int60        = WorkoutInterval("Int60",  60);
+WorkoutInterval int45        = WorkoutInterval("Int45",  45);
+WorkoutInterval int30        = WorkoutInterval("Int30",  30);
+WorkoutInterval int15        = WorkoutInterval("Int15",  15);
+WorkoutInterval delayWorkout = WorkoutInterval(0,  12);
+
+WorkoutInterval boxingIntervals[] =         {restInterval, round1};
+WorkoutInterval workout3Intervals[] =       {delayWorkout, int60, restInterval, int30, restInterval, int15};
+WorkoutInterval workout4Intervals[] =       {delayWorkout, int60, restInterval, int45, restInterval, int30, restInterval, int15};
+WorkoutInterval fourPlus2Intervals[] =      {delayWorkout, round1, restInterval, round2, restInterval, round3, restInterval, round4, restInterval,
+                                             int60, restInterval, int45, restInterval, int30, restInterval, int15, restInterval, int60, restInterval, int45, restInterval, int30, restInterval, int15};  //4 rounds + 2 workouts
+WorkoutInterval fourPlus2Plus1Intervals[] = {delayWorkout, round1, restInterval, round2, restInterval, round3, restInterval, round4, restInterval,
+                                             int60, restInterval, int45, restInterval, int30, restInterval, int15, restInterval, int60, restInterval, int45, restInterval, int30, restInterval, int15,
+                                             restInterval, round5};           //4 rounds + 2 workouts + 1 round
+WorkoutInterval fourPlus2Plus2Intervals[] = {delayWorkout, round1, restInterval, round2, restInterval, round3, restInterval, round4, restInterval,
+                                             int60, restInterval, int45, restInterval, int30, restInterval, int15, restInterval, int60, restInterval, int45, restInterval, int30, restInterval, int15,
+                                             restInterval, round5, restInterval, round6};  //4 rounds + 2 workouts + 2 rounds
+
+Workout workouts[MENUS_COUNT] = {
+  Workout("Boxing", 2, 1, boxingIntervals),
+  Workout("Workout3", 6, 1, workout3Intervals),
+  Workout("Workout4", 8, 1, workout4Intervals),
+  Workout("4 +2", 24, 0, fourPlus2Intervals),
+  Workout("4 +2 +1", 26, 0, fourPlus2Plus1Intervals),
+  Workout("4 +2 +2", 28, 0, fourPlus2Plus2Intervals)
 };
 char currentWorkout = 0;
 
@@ -104,7 +132,7 @@ int LCDKeypad::button(){
 
 /*****************************************/
 
-MenuItem::MenuItem(char *n, uchar cnt, uchar c, uchar *intvrls) {
+Workout::Workout(char *n, uchar cnt, uchar c, WorkoutInterval *intvrls) {
   name = n;
   countOfIntrvals = cnt;
   intervals = intvrls;
@@ -112,15 +140,22 @@ MenuItem::MenuItem(char *n, uchar cnt, uchar c, uchar *intvrls) {
   currentInterval = 0;
 }
 
-void MenuItem::incCurrInterval() {
+void Workout::incCurrInterval() {
   ++currentInterval;
   if(currentInterval >= countOfIntrvals){
     currentInterval = 0;
   }
 }
 
-uchar MenuItem::getCurrIntervalTime() {
+WorkoutInterval Workout::getCurrInterval() {
   return intervals[currentInterval];
+}
+
+/*****************************************/
+
+WorkoutInterval::WorkoutInterval(char *n, uchar d) {
+  name = n;
+  duration = d;
 }
 
 /*****************************************/
@@ -136,14 +171,19 @@ void drawMenu(int menuItem, int row, char isActive){
   } else {
     lcd.print(" ");
   }
-  lcd.print(menu[menuItem].name);
+  lcd.print(workouts[menuItem].name);
 }
 
 void showTime(){
   clearScreen();
   unsigned int localSec = seconds;
   lcd.setCursor(0, 0);
-  lcd.print(menu[currentWorkout].name);
+  lcd.print(workouts[currentWorkout].name);
+  if(workouts[currentWorkout].getCurrInterval().name != 0){
+    lcd.print(" (");
+    lcd.print(workouts[currentWorkout].getCurrInterval().name);
+    lcd.print(")");
+  }
   lcd.setCursor(0, 1);
   lcd.print((int)(localSec / 60));
   lcd.print(":");
@@ -206,14 +246,14 @@ ISR(TIMER1_COMPA_vect) {        // interrupt service routine
           seconds--;
         } else {
           //disableTimer1Interrupts();
-          int currInterval = menu[currentWorkout].currentInterval;
+          int currInterval = workouts[currentWorkout].currentInterval;
           int soundToPlay = MUSIC_SWITCH;
-          if(!menu[currentWorkout].cycle && menu[currentWorkout].countOfIntrvals == currInterval - 1) {
+          if(workouts[currentWorkout].cycle == 0 && workouts[currentWorkout].countOfIntrvals == currInterval + 1) {
             soundToPlay = MUSIC_END;
             timerMode = TIMER_MODE_DISABLED;
           } else {
-            menu[currentWorkout].incCurrInterval();
-            seconds = menu[currentWorkout].getCurrIntervalTime();
+            workouts[currentWorkout].incCurrInterval();
+            seconds = workouts[currentWorkout].getCurrInterval().duration;
           }
           sound(soundToPlay);
           //enableTimer1Interrupts();
@@ -275,8 +315,8 @@ void loop() {
           case KEYPAD_SELECT:
               timerMode = TIMER_MODE_DISABLED;
               currentWorkout = scrollableMenu.getCurrent();
-              menu[currentWorkout].currentInterval = 0;
-              seconds = menu[currentWorkout].intervals[0];
+              workouts[currentWorkout].currentInterval = 0;
+              seconds = workouts[currentWorkout].intervals[0].duration;
               regime = REGIME_WORKOUT;
               timerMode = TIMER_MODE_COUNTDOWN;
               showTime();
